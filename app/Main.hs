@@ -20,7 +20,36 @@ import Control.Concurrent
 
 import Data.IORef
 
-startingState = CSState [Person "djl329" (RankInfo [])] [] [Chore 1]
+people :: [String]
+people =
+    [ "djl329"
+    , "a"
+    , "b"
+    , "c"
+    , "d"
+    , "e"
+    , "f"
+    , "g"
+    , "h"
+    , "i"
+    , "j"
+    , "k"
+    , "l"
+    , "m"
+    , "n"
+    , "o"
+    , "p"
+    , "q"
+    , "r"
+    , "s"
+    , "t"
+    , "u"
+    , "v"
+    , "w"
+    , "x"
+    ]
+
+startingState = CSState ((\x -> Person x (RankInfo [])) <$> people) [] (Chore <$> [1..26])
 
 timerLoop lock state = go where
     go = update lock state >> threadDelay (5 * 60 * 1000 * 1000) >> go
