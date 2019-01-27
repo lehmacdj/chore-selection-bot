@@ -184,5 +184,5 @@ forceChoose m c num = do
         else pure ()
     send (show (3 * (num - length (view choresLeft s))) ++ " hours left until next chore needs to be chosen! At that time the person that needs to choose their chore next will have to have used `/chore-select` to choose their next chore.")
     s'' <- readIORef c
-    sendStatusUpdate s''
+    sendStateUpdate s''
     ret m ()
