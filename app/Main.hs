@@ -15,6 +15,8 @@ import Data.Monoid (mconcat)
 import Control.Concurrent.MVar
 import Data.IORef
 
+import Network.Wreq
+
 startingState = CSState [Person "djl329" (RankInfo [])] [] [Chore 1]
 
 main = do
