@@ -14,13 +14,20 @@ import Data.String (fromString)
 import Data.Monoid (mconcat)
 
 import Control.Concurrent.MVar
+
+import Control.Concurrent.Async.Timer
+
 import Data.IORef
 
 startingState = CSState [Person "djl329" (RankInfo [])] [] [Chore 1]
 
+timerConf = setInterval (5 * 60 * 1000) defaultConf
+
+main :: IO ()
 main = do
     lock <- newMVar ()
     state <- liftIO . newIORef $ startingState
+    withAsyncTimer timerConf (\_ -> update lock state)
     scotty 80 $ do
         post "/select" $ do
             t <- param "text"

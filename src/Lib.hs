@@ -23,6 +23,9 @@ import Control.Concurrent.MVar
 import Network.Wreq hiding (delete)
 import Network.Wreq.Types
 
+numberShow :: [String] -> String
+numberShow = concat . zipWith (++) ((++". ") . show <$> [1..])
+
 postMessageURL :: String
 postMessageURL = "https://hooks.slack.com/services/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"
 
@@ -47,7 +50,7 @@ mkChore num = do
 newtype RankInfo = RankInfo { unRankInfo :: [Chore] }
 
 instance Show RankInfo where
-    show (RankInfo cs) = concat $ zipWith (++) ((++". ") . show <$> [1..]) ls where
+    show (RankInfo cs) = numberShow ls where
         ls = (++"\n") . show <$> cs
 
 noRankInfo :: RankInfo
@@ -65,6 +68,9 @@ data Person a = Person
     }
 makeLenses ''Person
 
+instance Show a => Show (Person a) where
+    show p = _personName p ++ ": " ++ show (_personInfo p)
+
 data CSConfig = CSConfig
     { pickInterval :: NominalDiffTime
     , startTime :: UTCTime
@@ -76,6 +82,14 @@ data CSState = CSState
     , _choresLeft :: [Chore]
     }
 makeLenses ''CSState
+
+instance Show CSState where
+    show s = "Someone has chosen their chore!\n" ++
+        "The following chores have been chosen:\n" ++ showChosen (_alreadyChose s) ++
+        "The following people have yet to choose and will choose in the order shown:\n" ++ showUnchosen (toListOf (toChoose.traverse.personName) s)
+            where
+                showChosen ps = numberShow $ (++"\n") . show <$> ps
+                showUnchosen ps = numberShow $ (++"\n") . show <$> ps
 
 updateRankInfo :: [Chore] -> RankInfo -> RankInfo
 updateRankInfo left = RankInfo . filter (`elem` left) . unRankInfo
@@ -129,13 +143,16 @@ data UpdateResponse = Updated | Unchanged
 ret :: MVar () -> b -> IO b
 ret m x = putMVar m () >> pure x
 
-update :: MVar () -> IORef CSState -> IO UpdateResponse
+update :: MVar () -> IORef CSState -> IO ()
 update m c = do
     takeMVar m
     s <- readIORef c
     case doUpdate s of
-        Nothing -> ret m Unchanged
-        Just s' -> writeIORef c s' >> ret m Updated
+        Nothing -> ret m ()
+        Just s' -> writeIORef c s' >> sendStateUpdate s s' >> ret m ()
+
+sendStateUpdate :: CSState -> CSState -> IO ()
+sendStateUpdate s s' = send (show s')
 
 send :: String -> IO ()
 send s = post postMessageURL (object

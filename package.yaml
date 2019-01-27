@@ -30,6 +30,7 @@ dependencies:
 - aeson
 - wreq
 - text
+- async-timer
 
 library:
   source-dirs: src
