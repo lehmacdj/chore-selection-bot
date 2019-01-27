@@ -26,6 +26,7 @@ dependencies:
 - containers
 - time
 - network
+- scotty
 
 library:
   source-dirs: src

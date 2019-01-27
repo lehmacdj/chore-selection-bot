@@ -1,32 +1,13 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Main where
 
 import Lib
 
-import Control.Applicative
-import Control.Concurrent
-import Control.Monad
-import Network.Socket
-import System.Environment
-import System.IO
+import Web.Scotty
 
-main :: IO ()
-main = withSocketsDo $ do
-  port <- toEnum . read . head <$> getArgs
-  newSocket <- socket AF_INET Stream defaultProtocol
-  setSocketOption newSocket ReuseAddr 1
-  bindSocket newSocket $ SockAddrInet port iNADDR_ANY
-  listen newSocket 2
-  runServer echo newSocket
+import Data.Monoid (mconcat)
 
-runServer :: (String -> String) -> Socket -> IO()
-runServer f s = forever $ do
-  (usableSocket,_) <- accept s
-  forkIO $ interactWithSocket f usableSocket
-
-interactWithSocket :: (String -> String) -> Socket -> IO()
-interactWithSocket f s = do
-  handle <- socketToHandle s ReadWriteMode
-  forever $ f <$> hGetLine handle >>= hPutStrLn handle
-
-echo :: String -> String
-echo = id
+main = scotty 3000 $ do
+    get "/select" (html "<h1>Scotty, beam me up!</h1>")
+    get "/help" (html "<h1>Scotty, beam me up!</h1>")
