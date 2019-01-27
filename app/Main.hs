@@ -6,8 +6,10 @@ import Lib
 
 import Web.Scotty
 
+import Data.String (fromString)
+
 import Data.Monoid (mconcat)
 
 main = scotty 3000 $ do
-    get "/select" (html "<h1>Scotty, beam me up!</h1>")
-    get "/help" (html "<h1>Scotty, beam me up!</h1>")
+    get "/select" (request >>= html . fromString . show)
+    get "/help" (request >>= html . fromString . show)
