@@ -49,7 +49,7 @@ people =
     , "x"
     ]
 
-startingState = CSState ((\x -> Person x (RankInfo [])) <$> people) [] (Chore <$> [1..26])
+startingState = CSState ((\x -> Person x (RankInfo [])) <$> people) [] (Chore <$> [1..25])
 
 timerLoop lock state = go where
     go = update lock state >> threadDelay (5 * 60 * 1000 * 1000) >> go
