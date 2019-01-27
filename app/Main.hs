@@ -36,6 +36,7 @@ main = do
             liftIO $ takeMVar lock
             s <- liftIO $ readIORef state
             liftIO $ putMVar lock ()
+            -- terrible ad hoc code
             case toListOf (toChoose . traverse . filtered (\x -> view personName x == u)) s of
                 [Person _ (RankInfo ri)] -> html $ fromString $ "Your preferences (from favorite to least favorite) are: " ++ show ri
                 _ -> html "You have already selected your chore (or are not choosing chores at all)! So you can't change your preference."
