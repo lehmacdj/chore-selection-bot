@@ -29,7 +29,7 @@ main :: IO ()
 main = do
     lock <- newMVar ()
     state <- liftIO . newIORef $ startingState
-    forkIO (timerLoop lock state)
+    forkIO (putStrLn "Hi!" >> timerLoop lock state)
     scotty 80 $ do
         post "/select" $ do
             t <- param "text"
