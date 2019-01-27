@@ -84,9 +84,10 @@ data CSState = CSState
 makeLenses ''CSState
 
 instance Show CSState where
-    show s = "Someone has chosen their chore!\n" ++
-        "The following chores have been chosen:\n" ++ showChosen (_alreadyChose s) ++
-        "The following people have yet to choose and will choose in the order shown:\n" ++ showUnchosen (toListOf (toChoose.traverse.personName) s)
+    show s =
+        "The following people have chosen the following chores:\n" ++ showChosen (_alreadyChose s) ++
+        "The following people have yet to choose and will choose in the order shown:\n" ++ showUnchosen (toListOf (toChoose.traverse.personName) s) ++
+        "The following chores are unselected:\n" ++ concat ((++"\n") . show <$> _choresLeft s)
             where
                 showChosen ps = numberShow $ (++"\n") . show <$> ps
                 showUnchosen ps = numberShow $ (++"\n") . show <$> ps
@@ -182,7 +183,7 @@ forceChoose m c num = do
                 writeIORef c s'
             _ -> error "bad config"
         else pure ()
-    send (show (3 * (num - length (view choresLeft s))) ++ " hours left until next chore needs to be chosen! At that time the person that needs to choose their chore next will have to have used `/chore-select` to choose their next chore.")
+    send (show (3 * (num - length (view choresLeft s))) ++ " hours left until next chore needs to be chosen! At that time the person that needs to choose their chore next will have to have used `/chore-select` to choose their preferences for their chore.")
     s'' <- readIORef c
     sendStateUpdate s''
     ret m ()
