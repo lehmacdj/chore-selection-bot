@@ -47,7 +47,8 @@ mkChore num = do
 newtype RankInfo = RankInfo { unRankInfo :: [Chore] }
 
 instance Show RankInfo where
-    show (RankInfo cs) = cs >>= ("- "++) . (++"\n") . show
+    show (RankInfo cs) = concat $ zipWith (++) ((++". ") . show <$> [1..]) ls where
+        ls = (++"\n") . show <$> cs
 
 noRankInfo :: RankInfo
 noRankInfo = RankInfo []
