@@ -18,7 +18,7 @@ import Data.IORef
 startingState = CSState [Person "djl329" (RankInfo [])] [] [Chore 1]
 
 main = do
-    lock <- newEmptyMVar
+    lock <- newMVar ()
     state <- liftIO . newIORef $ startingState
     scotty 80 $ do
         post "/select" $ do
