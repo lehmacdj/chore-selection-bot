@@ -31,9 +31,37 @@ postMessageURL = "https://hooks.slack.com/services/T9FSXHULB/BFQ76L2TW/1BQ8FvDJB
 
 -- | Represents a chore by its index into the list of job descriptions.
 newtype Chore = Chore { _choreIndex :: Int }
-    deriving (Eq, Show)
+    deriving (Eq)
 makePrisms ''Chore
 makeLenses ''Chore
+
+instance Show Chore where
+    show (Chore 1) = "1.  1st Floor Bathroom (Sunday)"
+    show (Chore 2) = "2.  1st Floor Bathroom (Wednesday)"
+    show (Chore 3) = "3.  2nd Floor Bathroom/"
+    show (Chore 4) = "4.  2nd Floor Bathroom (Wednesday)"
+    show (Chore 5) = "5.  3rd Floor Bathroom (Sunday)"
+    show (Chore 6) = "6.  3rd Floor Bathroom (Wednesday)"
+    show (Chore 7) = "7.  Basement Bathroom/Dining Room (Wednesday)"
+    show (Chore 8) = "8.  Main Refrigerator (Sunday)"
+    show (Chore 9) = "9.  Main Refrigerator (Sunday)"
+    show (Chore 10) = "10. Main Refrigerator (Wednesday)"
+    show (Chore 11) = "11. Private Fridge/Weight Room (Weekly)"
+    show (Chore 12) = "12. Freezer/Steward Fridge (Weekly)"
+    show (Chore 13) = "13. Living Room (Sunday)"
+    show (Chore 14) = "14. Living Room (Sunday)"
+    show (Chore 15) = "15. Living Room (Wednesday)"
+    show (Chore 16) = "16. Kitchen Commando (Weekly)"
+    show (Chore 17) = "17. Kitchen Commando (Weekly)"
+    show (Chore 18) = "18. Foyer/Mudroom (Weekly)/Mail Sorter (Daily)"
+    show (Chore 19) = "19. Hallways (Weekly)"
+    show (Chore 20) = "20. Laundry Room/Tool Room/Storeroom (Weekly/Daily)"
+    show (Chore 21) = "21. House Laundry (Weekly)"
+    show (Chore 22) = "22. Main Stairwell/Utility Closets (Sunday)"
+    show (Chore 23) = "23. Back Stairwell/Bone Pile/Lost & Found (Weekly)"
+    show (Chore 24) = "24. Dining Room/Pool Room (Sunday)"
+    show (Chore 25) = "25. Miscellaneous Tasks (Weekly)"
+
 
 instance Bounded Chore where
     minBound = Chore 1
@@ -183,7 +211,7 @@ forceChoose m c num = do
                 writeIORef c s'
             _ -> error "bad config"
         else pure ()
-    send (show (3 * (num - length (view choresLeft s))) ++ " hours left until next chore needs to be chosen! At that time the person that needs to choose their chore next will have to have used `/chore-select` to choose their preferences for their chore.")
+    send (show (2 * (num - length (view choresLeft s))) ++ " hours left until the next chore needs to be chosen! At that time the person that needs to choose their chore next will have to have used `/chore-select` to choose their preferences for their chore.")
     s'' <- readIORef c
     sendStateUpdate s''
     ret m ()
