@@ -20,7 +20,7 @@ import Control.Concurrent
 
 import Data.IORef
 
-startingState = CSState [Person "djl329" (RankInfo [])] [] [Chore 1]
+startingState = CSState [] [Person "djl329" (Chore 1)] []
 
 timerConf = setInterval (5 * 60 * 1000) defaultConf
 
