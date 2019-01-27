@@ -4,17 +4,27 @@
 
 module Lib where
 
-import Control.Lens
+import Control.Lens hiding ((.=))
 import Control.Monad
 import Control.Monad.State
 import Control.Monad.Reader
 
+import Data.Aeson
+
 import Data.List
 import Data.Time
 import Data.Foldable
+import Data.String
+import Data.Text (Text, pack)
 
 import Data.IORef
 import Control.Concurrent.MVar
+
+import Network.Wreq hiding (delete)
+import Network.Wreq.Types
+
+postMessageURL :: String
+postMessageURL = "https://hooks.slack.com/services/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"
 
 -- | Represents a chore by its index into the list of job descriptions.
 newtype Chore = Chore { _choreIndex :: Int }
@@ -122,3 +132,10 @@ update m c = do
     case doUpdate s of
         Nothing -> ret m Unchanged
         Just s' -> writeIORef c s' >> ret m Updated
+
+send :: String -> IO ()
+send s = post postMessageURL (object
+    [pack "id" .= (1 :: Int)
+    ,pack "text" .= s
+    ,pack "type" .= "message"])
+    >> pure ()
