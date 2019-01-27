@@ -27,6 +27,8 @@ dependencies:
 - time
 - network
 - scotty
+- aeson
+- wreq
 
 library:
   source-dirs: src
