@@ -22,33 +22,30 @@ import Data.IORef
 
 startingState = CSState [] [Person "djl329" (Chore 1)] []
 
-timerConf = setInterval (5 * 60 * 1000) defaultConf
-
 timerLoop lock state = go where
-    go t = wait t >> update lock state >> go t
+    go = update lock state >> threadDelay (5 * 60 * 1000 * 1000) >> go
 
 main :: IO ()
 main = do
     lock <- newMVar ()
     state <- liftIO . newIORef $ startingState
-    withAsyncTimer timerConf $ \timer -> do
-        forkIO $ timerLoop lock state timer
-        scotty 80 $ do
-            post "/select" $ do
-                t <- param "text"
-                u <- param "user_name"
-                r <- liftIO $ select lock u t state
-                case r of
-                    Changed ri -> html $ fromString $ "Your preferences (from favorite to least favorite) are:\n" ++ show ri
-                    AlreadyChosen -> html "You have already selected your chore (or are not choosing chores at all)! So you can't change your preference."
-            post "/help" $ html
-                "Chore selection help:"
-            post "/list" $ do
-                u <- param "user_name"
-                liftIO $ takeMVar lock
-                s <- liftIO $ readIORef state
-                liftIO $ putMVar lock ()
-                -- terrible ad hoc code
-                case toListOf (toChoose . traverse . filtered (\x -> view personName x == u)) s of
-                    [Person _ ri] -> html $ fromString $ "Your preferences (from favorite to least favorite) are:\n" ++ show ri
-                    _ -> html "You have already selected your chore (or are not choosing chores at all)! So you can't change your preference."
+    forkIO (timerLoop lock state)
+    scotty 80 $ do
+        post "/select" $ do
+            t <- param "text"
+            u <- param "user_name"
+            r <- liftIO $ select lock u t state
+            case r of
+                Changed ri -> html $ fromString $ "Your preferences (from favorite to least favorite) are:\n" ++ show ri
+                AlreadyChosen -> html "You have already selected your chore (or are not choosing chores at all)! So you can't change your preference."
+        post "/help" $ html
+            "Chore selection help:"
+        post "/list" $ do
+            u <- param "user_name"
+            liftIO $ takeMVar lock
+            s <- liftIO $ readIORef state
+            liftIO $ putMVar lock ()
+            -- terrible ad hoc code
+            case toListOf (toChoose . traverse . filtered (\x -> view personName x == u)) s of
+                [Person _ ri] -> html $ fromString $ "Your preferences (from favorite to least favorite) are:\n" ++ show ri
+                _ -> html "You have already selected your chore (or are not choosing chores at all)! So you can't change your preference."
