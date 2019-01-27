@@ -2,9 +2,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Lib
-    ( someFunc
-    ) where
+module Lib where
 
 import Control.Lens
 import Control.Monad
@@ -39,12 +37,6 @@ noRankInfo = RankInfo []
 
 mkRankInfo :: [Int] -> Maybe RankInfo
 mkRankInfo = fmap RankInfo . mapM mkChore
-
-data Command
-    = Select RankInfo
-    | ShowSlot
-    | Help
-
 
 -- | Represents the information we can know about a given person at a given time.
 data PersonInfo
@@ -101,13 +93,12 @@ tryUpdate (CSState nextChoose alreadyPicked left) =
         Person n (RankInfo (c:cs)):xs -> Just $
             CSState xs (Person n c:alreadyPicked) (delete c left)
 
--- | Process a new command
-interpret :: Command -> CSM ()
-interpret = undefined
-
--- | Time based update
-update :: CSM ()
-update = undefined
+parseChoreList :: String -> Maybe [Chore]
+parseChoreList = sequence . go where
+    go i' = case reads i' of
+        [] | i' == "" -> []
+        [] -> go $ drop 1 i'
+        (n, r):_ -> mkChore n : go r
 
 someFunc :: IO ()
 someFunc = putStrLn "someFunc"
