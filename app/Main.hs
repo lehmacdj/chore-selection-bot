@@ -11,5 +11,5 @@ import Data.String (fromString)
 import Data.Monoid (mconcat)
 
 main = scotty 80 $ do
-    get "/select" (request >>= html . fromString . show)
-    get "/help" (request >>= html . fromString . show)
+    post "/select" (request >>= html . fromString . show)
+    post "/help" (request >>= html . fromString . show)
