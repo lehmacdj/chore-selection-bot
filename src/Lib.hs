@@ -11,6 +11,10 @@ import Control.Monad.Reader
 
 import Data.List
 import Data.Time
+import Data.Foldable
+
+import Data.IORef
+import Control.Concurrent.MVar
 
 -- | Represents a chore by its index into the list of job descriptions.
 newtype Chore = Chore { _choreIndex :: Int }
@@ -38,12 +42,6 @@ noRankInfo = RankInfo []
 mkRankInfo :: [Int] -> Maybe RankInfo
 mkRankInfo = fmap RankInfo . mapM mkChore
 
--- | Represents the information we can know about a given person at a given time.
-data PersonInfo
-    = Chosen Chore
-    | Ranked RankInfo
-makePrisms ''PersonInfo
-
 -- | Represents a person by their name.
 data Person a = Person
     { _personName :: String
@@ -59,24 +57,11 @@ data CSConfig = CSConfig
     }
 
 data CSState = CSState
-    { toChoose :: [Person RankInfo]
-    , chosen :: [Person Chore]
-    , choresLeft :: [Chore]
+    { _toChoose :: [Person RankInfo]
+    , _alreadyChose :: [Person Chore]
+    , _choresLeft :: [Chore]
     }
-
--- | Chore selection monad: stores the state for chore selection.
--- Consider wrapping in a free monad for time to isolate the use of IO
-newtype CSM a = CSM
-    { unCSM :: ReaderT CSConfig (StateT CSState IO) a
-    }
-    deriving
-    ( Functor
-    , Applicative
-    , Monad
-    , MonadIO
-    , MonadState CSState
-    , MonadReader CSConfig
-    )
+makeLenses ''CSState
 
 updateRankInfo :: [Chore] -> RankInfo -> RankInfo
 updateRankInfo left = RankInfo . filter (`elem` left) . unRankInfo
@@ -93,12 +78,47 @@ tryUpdate (CSState nextChoose alreadyPicked left) =
         Person n (RankInfo (c:cs)):xs -> Just $
             CSState xs (Person n c:alreadyPicked) (delete c left)
 
-parseChoreList :: String -> Maybe [Chore]
-parseChoreList = sequence . go where
+parseChoreList :: String -> [Chore]
+parseChoreList = fold . sequence . go where
     go i' = case reads i' of
         [] | i' == "" -> []
         [] -> go $ drop 1 i'
         (n, r):_ -> mkChore n : go r
 
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"
+doSelect :: String -> String -> CSState -> CSState
+doSelect n i = set
+    (toChoose . traverse . filtered (\x -> view personName x == n) . personInfo)
+    (RankInfo $ parseChoreList i)
+
+doUpdate :: CSState -> Maybe CSState
+doUpdate = go False where
+    go b s =
+        case tryUpdate s of
+            Nothing
+              | b -> Just s
+              | otherwise -> Nothing
+            Just s' -> go True s'
+
+data SelectResponse = AlreadyChosen | Changed RankInfo
+
+select :: MVar () -> String -> String -> IORef CSState -> IO SelectResponse
+select m n i c = do
+    takeMVar m
+    s <- readIORef c
+    let s' = doSelect n i s
+    if has (alreadyChose . traverse . filtered (\x -> view personName x == n)) s
+       then ret m AlreadyChosen
+       else writeIORef c s' >> ret m (Changed (RankInfo $ parseChoreList i))
+
+data UpdateResponse = Updated | Unchanged
+
+ret :: MVar () -> b -> IO b
+ret m x = putMVar m () >> pure x
+
+update :: MVar () -> IORef CSState -> IO UpdateResponse
+update m c = do
+    takeMVar m
+    s <- readIORef c
+    case doUpdate s of
+        Nothing -> ret m Unchanged
+        Just s' -> writeIORef c s' >> ret m Updated

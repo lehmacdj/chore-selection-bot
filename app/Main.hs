@@ -15,9 +15,11 @@ import Data.Monoid (mconcat)
 import Control.Concurrent.MVar
 import Data.IORef
 
+startingState = CSState [Person "djl329" (RankInfo [])] [] [Chore 1]
+
 main = do
     lock <- newEmptyMVar
-    state <- liftIO . newIORef $ CSState [] [] []
+    state <- liftIO . newIORef $ startingState
     scotty 80 $ do
         post "/select" $ do
             t <- param "text"
