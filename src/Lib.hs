@@ -46,6 +46,9 @@ mkChore num = do
 -- | Represents a partial ranking of the chores by a person.
 newtype RankInfo = RankInfo { unRankInfo :: [Chore] }
 
+instance Show RankInfo where
+    show (RankInfo cs) = cs >>= (++"\n") . show
+
 noRankInfo :: RankInfo
 noRankInfo = RankInfo []
 

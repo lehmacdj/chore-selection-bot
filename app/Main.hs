@@ -27,7 +27,7 @@ main = do
             u <- param "user_name"
             r <- liftIO $ select lock u t state
             case r of
-                Changed (RankInfo ri) -> html $ fromString $ "Your preferences (from favorite to least favorite) are: " ++ show ri
+                Changed ri -> html $ fromString $ "Your preferences (from favorite to least favorite) are:\n" ++ show ri
                 AlreadyChosen -> html "You have already selected your chore (or are not choosing chores at all)! So you can't change your preference."
         post "/help" $ html
             "Chore selection help:"
@@ -38,5 +38,5 @@ main = do
             liftIO $ putMVar lock ()
             -- terrible ad hoc code
             case toListOf (toChoose . traverse . filtered (\x -> view personName x == u)) s of
-                [Person _ (RankInfo ri)] -> html $ fromString $ "Your preferences (from favorite to least favorite) are: " ++ show ri
+                [Person _ ri] -> html $ fromString $ "Your preferences (from favorite to least favorite) are:\n" ++ show ri
                 _ -> html "You have already selected your chore (or are not choosing chores at all)! So you can't change your preference."
