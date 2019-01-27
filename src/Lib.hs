@@ -149,10 +149,10 @@ update m c = do
     s <- readIORef c
     case doUpdate s of
         Nothing -> ret m ()
-        Just s' -> writeIORef c s' >> sendStateUpdate s s' >> ret m ()
+        Just s' -> writeIORef c s' >> sendStateUpdate s' >> ret m ()
 
-sendStateUpdate :: CSState -> CSState -> IO ()
-sendStateUpdate s s' = send (show s')
+sendStateUpdate :: CSState -> IO ()
+sendStateUpdate s' = send (show s')
 
 send :: String -> IO ()
 send s = post postMessageURL (object
@@ -160,3 +160,29 @@ send s = post postMessageURL (object
     ,pack "text" .= s
     ,pack "type" .= "message"])
     >> pure ()
+
+normalizeUpdateRankInfo :: CSState -> CSState
+normalizeUpdateRankInfo c = over toChoose (updateAllRankInfo (view choresLeft c)) c
+
+forceChoose :: MVar () -> IORef CSState -> Int -> IO ()
+forceChoose m c num = do
+    takeMVar m
+    s <- readIORef c
+    if num < length (view choresLeft s)
+       then
+        case normalizeUpdateRankInfo s of
+            CSState [] ys [] -> pure ()
+            CSState (Person n (RankInfo []):xs) ys (c':cs) -> do
+                let s' = CSState xs (Person n c':ys) cs
+                send ("Forced " ++ n ++ " to choose " ++ c' ++ " because they didn't select chores in time!")
+                writeIORef c s'
+            CSState (Person n (RankInfo (c':_)):xs) ys cs -> do
+                let s' = CSState xs (Person n c':ys) cs
+                send ("Forced " ++ n ++ " to choose " ++ c' ++ " because they didn't select chores in time!")
+                writeIORef c s'
+            _ -> error "bad config"
+        else pure ()
+    send (show (3 * (num - length (view choresLeft s))) ++ " hours left until next chore needs to be chosen! At that time the person that needs to choose their chore next will have to have used `/chore-select` to choose their next chore.")
+    s'' <- readIORef c
+    sendStatusUpdate s''
+    ret m ()

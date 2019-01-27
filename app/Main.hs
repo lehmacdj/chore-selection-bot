@@ -25,6 +25,9 @@ startingState = CSState [Person "djl329" (RankInfo [Chore 1])] [] [Chore 1]
 timerLoop lock state = go where
     go = update lock state >> threadDelay (5 * 60 * 1000 * 1000) >> go
 
+timerLoop2 lock state = go 0 where
+    go n = forceChoose lock state (26 - n) >> threadDelay (5 * 60 * 1000 * 1000) >> go (n + 1)
+
 main :: IO ()
 main = do
     lock <- newMVar ()
