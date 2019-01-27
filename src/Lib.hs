@@ -174,11 +174,11 @@ forceChoose m c num = do
             CSState [] ys [] -> pure ()
             CSState (Person n (RankInfo []):xs) ys (c':cs) -> do
                 let s' = CSState xs (Person n c':ys) cs
-                send ("Forced " ++ n ++ " to choose " ++ c' ++ " because they didn't select chores in time!")
+                send ("Forced " ++ n ++ " to choose " ++ show c' ++ " because they didn't select chores in time!")
                 writeIORef c s'
             CSState (Person n (RankInfo (c':_)):xs) ys cs -> do
                 let s' = CSState xs (Person n c':ys) cs
-                send ("Forced " ++ n ++ " to choose " ++ c' ++ " because they didn't select chores in time!")
+                send ("Forced " ++ n ++ " to choose " ++ show c' ++ " because they didn't select chores in time!")
                 writeIORef c s'
             _ -> error "bad config"
         else pure ()
