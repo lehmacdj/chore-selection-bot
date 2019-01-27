@@ -20,7 +20,7 @@ import Control.Concurrent
 
 import Data.IORef
 
-startingState = CSState [] [Person "djl329" (Chore 1)] []
+startingState = CSState [Person "djl329" (RankInfo [Chore 1])] [] [Chore 1]
 
 timerLoop lock state = go where
     go = update lock state >> threadDelay (5 * 60 * 1000 * 1000) >> go
