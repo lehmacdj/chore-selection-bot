@@ -12,14 +12,19 @@ import Data.String (fromString)
 
 import Data.Monoid (mconcat)
 
-main = scotty 80 $ do
-    post "/select" $ do
-        t <- param "text"
-        html $ fromString $ "You inputted: " ++ t
-    post "/help" $ do
-        req <- request
-        bod <- body
-        let req' = show req
-        let bod' = show bod
-        let resp = req' ++ "\n" ++ bod'
-        html $ fromString resp
+import Control.Concurrent.MVar
+import Data.IORef
+
+main = do
+    lock <- newEmptyMVar
+    state <- liftIO . newIORef $ CSState [] [] []
+    scotty 80 $ do
+        post "/select" $ do
+            t <- param "text"
+            u <- param "user_name"
+            r <- liftIO $ select lock u t state
+            case r of
+                Changed (RankInfo ri) -> html $ fromString $ "Your preferences (from favorite to least favorite) are: " ++ show ri
+                AlreadyChosen -> html "You have already selected your chore! So you can't change your preference."
+        post "/help" $ html
+            "Chore selection help:"
