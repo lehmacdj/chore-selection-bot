@@ -16,6 +16,7 @@ import Data.Time
 import Data.Foldable
 import Data.String
 import Data.Text (Text, pack)
+import Data.Maybe
 
 import Data.IORef
 import Control.Concurrent.MVar
@@ -24,6 +25,34 @@ import Network.Wreq hiding (delete)
 import Network.Wreq.Types
 
 import Control.Concurrent
+
+ids =
+    [ ("UCFSLM734", "Malcolm")
+    , ("UCFT397LK", "John")
+    , ("UCMEMCD39", "Gary")
+    , ("UCLDEKEPJ", "Cassie")
+    , ("UFQAU6YTV", "Nicholas")
+    , ("UF953QPA9", "Aditi")
+    , ("UF554NBGA", "Liam")
+    , ("UFA5E4MMH", "Lillian Amanda")
+    , ("U9FDWB83B", "Fauna")
+    , ("UFQ9X0M43", "Nancy S.")
+    , ("UF7SF76NS", "Lucas")
+    , ("U9J774RDM", "Nellie")
+    , ("UBSD343V0", "Shane")
+    , ("UBSD343V0", "Shane")
+    , ("UCFPC95A8", "Catie")
+    , ("UF5CK7QAZ", "Max")
+    , ("UCFS1RC5Q", "Maria")
+    , ("UCG6A4K61", "Xavier")
+    , ("UFQEBH13L", "Raúl")
+    , ("UCJCM7GA1", "Franco")
+    , ("UFN1D4B6U", "Tim")
+    , ("UCFNFGQMB", "Emily")
+    , ("U9GRD7WLW", "Agrippa")
+    , ("UCKSX0170", "Carmen")
+    , ("UCJUZ2REY", "Katie")
+    ]
 
 numberShow :: [String] -> String
 numberShow = concat . zipWith (++) ((++". ") . show <$> [1..])
@@ -98,7 +127,7 @@ data Person a = Person
 makeLenses ''Person
 
 instance Show a => Show (Person a) where
-    show p = _personName p ++ ": " ++ show (_personInfo p)
+    show p = fromJust (lookup (_personName p) ids) ++ ": " ++ show (_personInfo p)
 
 data CSConfig = CSConfig
     { pickInterval :: NominalDiffTime
@@ -120,7 +149,7 @@ instance Show CSState where
         ++ "See here for full descriptions of all of the chores: https://docs.google.com/document/d/1vMy126mTZSrse0vL7iJcosTmvn_Dg9JcvWyPLpFL0aI/edit?usp=sharing"
             where
                 showChosen ps = numberShow $ (++"\n") . show <$> ps
-                showUnchosen ps = numberShow $ (++"\n") . show <$> ps
+                showUnchosen ps = numberShow $ (++"\n") . fromJust . (`lookup` ids) <$> ps
 
 updateRankInfo :: [Chore] -> RankInfo -> RankInfo
 updateRankInfo left = RankInfo . filter (`elem` left) . unRankInfo
@@ -170,7 +199,6 @@ select m n i c = do
        else do
            writeIORef c s'
            ret m ()
-           forkIO $ threadDelay (3 * 1000 * 1000 * 60) >> update m c
            pure (Changed (RankInfo $ parseChoreList i))
 
 data UpdateResponse = Updated | Unchanged

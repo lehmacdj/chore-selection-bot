@@ -21,33 +21,7 @@ import Control.Concurrent
 import Data.IORef
 
 people :: [String]
-people =
-    [ "djl329"
-    , "a"
-    , "b"
-    , "c"
-    , "d"
-    , "e"
-    , "f"
-    , "g"
-    , "h"
-    , "i"
-    , "j"
-    , "k"
-    , "l"
-    , "m"
-    , "n"
-    , "o"
-    , "p"
-    , "q"
-    , "r"
-    , "s"
-    , "t"
-    , "u"
-    , "v"
-    , "w"
-    , "x"
-    ]
+people = toListOf (traverse._1) ids
 
 startingState :: CSState
 startingState = CSState ((\x -> Person x (RankInfo [])) <$> people) [] (Chore <$> [1..25])
@@ -58,21 +32,21 @@ timerLoop lock state = go where
 
 timerLoop2 :: MVar () -> IORef CSState -> IO b
 timerLoop2 lock state = go 0 where
-    go n = forceChoose lock state (28 - n) >> threadDelay (2 * 60 * 60 * 1000 * 1000) >> go (n + 1)
+    go n = forceChoose lock state (29 - n) >> threadDelay (2 * 60 * 60 * 1000 * 1000) >> go (n + 1)
 
 main :: IO ()
 main = do
     lock <- newMVar ()
     state <- liftIO . newIORef $ startingState
-    -- forkIO (timerLoop lock state)
-    -- forkIO (timerLoop2 lock state)
+    forkIO (timerLoop lock state)
+    forkIO (timerLoop2 lock state)
     scotty 80 $ do
         post "/echo" $ do
             b <- body
             html $ fromString $ show b
         post "/select" $ do
             t <- param "text"
-            u <- param "user_name"
+            u <- param "user_id"
             r <- liftIO $ select lock u t state
             case r of
                 Changed ri -> html $ fromString $ "Your preferences (from favorite to least favorite) are:\n" ++ show ri
