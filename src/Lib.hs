@@ -40,7 +40,7 @@ makeLenses ''Chore
 instance Show Chore where
     show (Chore 1) = "(1) 1st Floor Bathroom (Sunday)"
     show (Chore 2) = "(2) 1st Floor Bathroom (Wednesday)"
-    show (Chore 3) = "(3) 2nd Floor Bathroom/"
+    show (Chore 3) = "(3) 2nd Floor Bathroom (Sunday)"
     show (Chore 4) = "(4) 2nd Floor Bathroom (Wednesday)"
     show (Chore 5) = "(5) 3rd Floor Bathroom (Sunday)"
     show (Chore 6) = "(6) 3rd Floor Bathroom (Wednesday)"
@@ -117,6 +117,7 @@ instance Show CSState where
         "The following people have chosen the following chores:\n" ++ showChosen (_alreadyChose s) ++
         "The following people have yet to choose and will choose in the order shown:\n" ++ showUnchosen (toListOf (toChoose.traverse.personName) s) ++
         "The following chores are unselected:\n" ++ concat ((++"\n") . show <$> _choresLeft s)
+        ++ "See here for full descriptions of all of the chores: https://docs.google.com/document/d/1vMy126mTZSrse0vL7iJcosTmvn_Dg9JcvWyPLpFL0aI/edit?usp=sharing"
             where
                 showChosen ps = numberShow $ (++"\n") . show <$> ps
                 showUnchosen ps = numberShow $ (++"\n") . show <$> ps
