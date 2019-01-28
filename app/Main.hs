@@ -32,7 +32,7 @@ timerLoop lock state = go where
 
 timerLoop2 :: MVar () -> IORef CSState -> IO b
 timerLoop2 lock state = go 0 where
-    go n = forceChoose lock state (29 - n) >> threadDelay (2 * 60 * 60 * 1000 * 1000) >> go (n + 1)
+    go n = forceChoose lock state (28 - n) >> threadDelay (2 * 60 * 60 * 1000 * 1000) >> go (n + 1)
 
 main :: IO ()
 main = do
