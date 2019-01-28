@@ -23,6 +23,8 @@ import Control.Concurrent.MVar
 import Network.Wreq hiding (delete)
 import Network.Wreq.Types
 
+import Control.Concurrent
+
 numberShow :: [String] -> String
 numberShow = concat . zipWith (++) ((++". ") . show <$> [1..])
 
@@ -61,7 +63,6 @@ instance Show Chore where
     show (Chore 23) = "(23) Back Stairwell/Bone Pile/Lost & Found (Weekly)"
     show (Chore 24) = "(24) Dining Room/Pool Room (Sunday)"
     show (Chore 25) = "(25) Miscellaneous Tasks (Weekly)"
-
 
 instance Bounded Chore where
     minBound = Chore 1
@@ -165,7 +166,11 @@ select m n i c = do
     let s' = doSelect n i s
     if has (alreadyChose . traverse . filtered (\x -> view personName x == n)) s
        then ret m AlreadyChosen
-       else writeIORef c s' >> ret m (Changed (RankInfo $ parseChoreList i))
+       else do
+           writeIORef c s'
+           ret m ()
+           forkIO $ threadDelay (3 * 1000 * 1000 * 60) >> update m c
+           pure (Changed (RankInfo $ parseChoreList i))
 
 data UpdateResponse = Updated | Unchanged
 
