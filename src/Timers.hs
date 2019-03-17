@@ -55,11 +55,11 @@ Just startDate = fromGregorianValid 2019 3 17
 
 -- hours to seconds + 1 min grace period
 hours :: Integer -> DiffTime
-hours x = secondsToDiffTime (60 * 60 * x + 60)
+hours x = secondsToDiffTime (60 * 60 * (x + 7) + 30 * 60 + 60)
 
 toUTCTime :: HourTime -> UTCTime
-toUTCTime (Monday x) = nominalDay `addUTCTime` UTCTime startDate (hours x)
-toUTCTime (Tuesday x) = (nominalDay + nominalDay) `addUTCTime` UTCTime startDate (hours x)
+toUTCTime (Monday x) = UTCTime startDate (hours x)
+toUTCTime (Tuesday x) = nominalDay `addUTCTime` UTCTime startDate (hours x)
 
 scheduleJob :: UTCTime -> IO () -> IO ThreadId
 scheduleJob timeAct action = forkIO go where
