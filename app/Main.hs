@@ -47,8 +47,9 @@ main :: IO ()
 main = do
     lock <- newMVar ()
     state <- liftIO . newIORef $ startingState
-    forkIO (timerLoop lock state)
     updates lock state
+    forkIO (timerLoop lock state)
+    sendStatusUpdate startingState
     scotty 80 $ do
         post "/echo" $ do
             b <- body
