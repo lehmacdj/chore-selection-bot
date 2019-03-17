@@ -61,7 +61,7 @@ descriptions :: String
 descriptions = "https://docs.google.com/document/d/1VZlbIs-vUvTR3_N2ycZgGb1I4hMCqsqOWiVbI6xc5SY/edit?usp=sharing"
 
 postMessageURL :: String
-postMessageURL = "https://hooks.slack.com/services/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"
+postMessageURL = "https://hooks.slack.com/services/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"
 
 numberShow :: [String] -> String
 numberShow = concat . zipWith (++) ((++". ") . show <$> [1..])
