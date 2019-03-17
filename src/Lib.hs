@@ -30,7 +30,6 @@ import Timers
 
 ids =
     [ ("UCJUZ2REY", "Katie")
-    , ("U9FP7FJP2", "Devin")
     , ("UCKSX0170", "Carmen")
     , ("U9GRD7WLW", "Agrippa")
     , ("UCFNFGQMB", "Emily")
