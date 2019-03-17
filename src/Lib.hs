@@ -57,10 +57,10 @@ ids =
     ]
 
 descriptions :: String
-descriptions = "https://docs.google.com/document/d/1vMy126mTZSrse0vL7iJcosTmvn_Dg9JcvWyPLpFL0aI/edit?usp=sharing"
+descriptions = "https://docs.google.com/document/d/1VZlbIs-vUvTR3_N2ycZgGb1I4hMCqsqOWiVbI6xc5SY/edit?usp=sharing"
 
 postMessageURL :: String
-postMessageURL = "https://hooks.slack.com/services/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"
+postMessageURL = "https://hooks.slack.com/services/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"
 
 numberShow :: [String] -> String
 numberShow = concat . zipWith (++) ((++". ") . show <$> [1..])
