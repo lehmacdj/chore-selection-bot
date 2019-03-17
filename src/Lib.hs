@@ -26,39 +26,44 @@ import Network.Wreq.Types
 
 import Control.Concurrent
 
+import Timers
+
 ids =
-    [ ("UCFSLM734", "Malcolm")
-    , ("UCFT397LK", "John")
-    , ("UCKPJSASV", "Bea")
-    , ("UCMEMCD39", "Gary")
-    , ("UCLDEKEPJ", "Cassie")
-    , ("UFQAU6YTV", "Nicholas")
-    , ("UF953QPA9", "Aditi")
-    , ("UF554NBGA", "Liam")
-    , ("UFA5E4MMH", "Lillian Amanda")
-    , ("U9FDWB83B", "Fauna")
-    , ("UFQ9X0M43", "Nancy S.")
-    , ("UF7SF76NS", "Lucas")
-    , ("U9J774RDM", "Nellie")
-    , ("UBSD343V0", "Shane")
-    , ("UCFPC95A8", "Catie")
-    , ("UF5CK7QAZ", "Max")
-    , ("UCFS1RC5Q", "Maria")
-    , ("UCG6A4K61", "Xavier")
-    , ("UFQEBH13L", "Raúl")
-    , ("UCJCM7GA1", "Franco")
-    , ("UFN1D4B6U", "Tilda")
-    , ("UCFNFGQMB", "Emily")
-    , ("U9GRD7WLW", "Agrippa")
+    [ ("UCJUZ2REY", "Katie")
     , ("UCKSX0170", "Carmen")
-    , ("UCJUZ2REY", "Katie")
+    , ("U9GRD7WLW", "Agrippa")
+    , ("UCFNFGQMB", "Emily")
+    , ("UFN1D4B6U", "Tilda")
+    , ("UCJCM7GA1", "Franco")
+    , ("UFQEBH13L", "Raúl")
+    , ("UCG6A4K61", "Xavier")
+    , ("UCFS1RC5Q", "Maria")
+    , ("UGN49A4Q1", "Anton")
+    , ("UF5CK7QAZ", "Max")
+    , ("UCFPC95A8", "Catie")
+    , ("UBSD343V0", "Shane")
+    , ("U9J774RDM", "Nellie")
+    , ("UF7SF76NS", "Lucas")
+    , ("UFQ9X0M43", "Nancy S.")
+    , ("U9FDWB83B", "Fauna")
+    , ("UFA5E4MMH", "Lillian Amanda")
+    , ("UF554NBGA", "Liam")
+    , ("UF953QPA9", "Aditi")
+    , ("UCLDEKEPJ", "Cassie")
+    , ("UCMEMCD39", "Gary")
+    , ("UCKPJSASV", "Bea")
+    , ("UCFT397LK", "John")
+    , ("UCFSLM734", "Malcolm")
     ]
 
-numberShow :: [String] -> String
-numberShow = concat . zipWith (++) ((++". ") . show <$> [1..])
+descriptions :: String
+descriptions = "https://docs.google.com/document/d/1vMy126mTZSrse0vL7iJcosTmvn_Dg9JcvWyPLpFL0aI/edit?usp=sharing"
 
 postMessageURL :: String
 postMessageURL = "https://hooks.slack.com/services/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"
+
+numberShow :: [String] -> String
+numberShow = concat . zipWith (++) ((++". ") . show <$> [1..])
 
 -- | Represents a chore by its index into the list of job descriptions.
 newtype Chore = Chore { _choreIndex :: Int }
@@ -84,14 +89,14 @@ instance Show Chore where
     show (Chore 15) = "(15) Living Room (Wednesday)"
     show (Chore 16) = "(16) Kitchen Commando (Weekly)"
     show (Chore 17) = "(17) Kitchen Commando (Weekly)"
-    show (Chore 18) = "(18) Foyer/Mudroom (Weekly)/Mail Sorter (Daily)"
-    show (Chore 19) = "(19) Hallways (Weekly)"
-    show (Chore 20) = "(20) Laundry Room/Tool Room/Storeroom (Weekly/Daily)"
-    show (Chore 21) = "(21) House Laundry (Weekly)"
-    show (Chore 22) = "(22) Main Stairwell/Utility Closets (Sunday)"
-    show (Chore 23) = "(23) Back Stairwell/Bone Pile/Lost & Found (Weekly)"
-    show (Chore 24) = "(24) Dining Room/Pool Room (Sunday)"
-    show (Chore 25) = "(25) Miscellaneous Tasks (Weekly)"
+    show (Chore 18) = "(18) Kitchen Commando (Weekly)"
+    show (Chore 19) = "(19) Foyer/Mudroom (Weekly)/Mail Sorter (Daily)"
+    show (Chore 20) = "(20) Hallways (Weekly)"
+    show (Chore 21) = "(21) Laundry Room/Tool Room/Storeroom (Weekly/Daily)"
+    show (Chore 22) = "(22) House Laundry (Weekly)"
+    show (Chore 23) = "(23) Main Stairwell/Utility Closets (Sunday)"
+    show (Chore 24) = "(24) Back Stairwell/Bone Pile/Lost & Found (Weekly)"
+    show (Chore 25) = "(25) Dining Room/Pool Room (Sunday)"
 
 instance Bounded Chore where
     minBound = Chore 1
@@ -117,9 +122,15 @@ noRankInfo = RankInfo []
 mkRankInfo :: [Int] -> Maybe RankInfo
 mkRankInfo = fmap RankInfo . mapM mkChore
 
+data NameTime = NameTime
+    { _name :: String
+    , _time :: HourTime
+    }
+makeLenses ''NameTime
+
 -- | Represents a person by their name.
 data Person a = Person
-    { _personName :: String
+    { _personName :: NameTime
     -- ^ the name of the person
     , _personInfo :: a
     -- ^ the order in the chore selection the person has
@@ -127,7 +138,7 @@ data Person a = Person
 makeLenses ''Person
 
 instance Show a => Show (Person a) where
-    show p = fromJust (lookup (_personName p) ids) ++ ": " ++ show (_personInfo p)
+    show p = fromJust (lookup (view (personName.name) p) ids) ++ ": " ++ show (_personInfo p)
 
 data CSConfig = CSConfig
     { pickInterval :: NominalDiffTime
@@ -146,10 +157,11 @@ instance Show CSState where
         "The following people have chosen the following chores:\n" ++ showChosen (_alreadyChose s) ++
         "The following people have yet to choose and will choose in the order shown:\n" ++ showUnchosen (toListOf (toChoose.traverse.personName) s) ++
         "The following chores are unselected:\n" ++ concat ((++"\n") . show <$> _choresLeft s)
-        ++ "See here for full descriptions of all of the chores: https://docs.google.com/document/d/1vMy126mTZSrse0vL7iJcosTmvn_Dg9JcvWyPLpFL0aI/edit?usp=sharing"
+        ++ "See here for full descriptions of all of the chores: " ++ descriptions
             where
                 showChosen ps = numberShow $ (++"\n") . show <$> ps
-                showUnchosen ps = numberShow $ (++"\n") . fromJust . (`lookup` ids) <$> ps
+                toUnchosenEntry (NameTime n t) = fromJust (lookup n ids) ++ " on " ++ show t ++ "\n"
+                showUnchosen ps = numberShow $ toUnchosenEntry <$> ps
 
 updateRankInfo :: [Chore] -> RankInfo -> RankInfo
 updateRankInfo left = RankInfo . filter (`elem` left) . unRankInfo
@@ -175,7 +187,7 @@ parseChoreList = fold . sequence . go where
 
 doSelect :: String -> String -> CSState -> CSState
 doSelect n i = set
-    (toChoose . traverse . filtered (\x -> view personName x == n) . personInfo)
+    (toChoose . traverse . filtered (\x -> view (personName.name) x == n) . personInfo)
     (RankInfo $ parseChoreList i)
 
 doUpdate :: CSState -> Maybe CSState
@@ -194,7 +206,7 @@ select m n i c = do
     takeMVar m
     s <- readIORef c
     let s' = doSelect n i s
-    if has (alreadyChose . traverse . filtered (\x -> view personName x == n)) s
+    if has (alreadyChose . traverse . filtered (\x -> view (personName.name) x == n)) s
        then ret m AlreadyChosen
        else do
            writeIORef c s'
@@ -237,15 +249,14 @@ forceChoose m c num = do
             CSState [] ys [] -> pure ()
             CSState (Person n (RankInfo []):xs) ys (c':cs) -> do
                 let s' = CSState xs (Person n c':ys) cs
-                send ("Forced " ++ n ++ " to choose " ++ show c' ++ " because they didn't select chores in time!")
+                send ("Forced " ++ view name n ++ " to choose " ++ show c' ++ " because they didn't select chores in time!")
                 writeIORef c s'
             CSState (Person n (RankInfo (c':_)):xs) ys cs -> do
                 let s' = CSState xs (Person n c':ys) cs
-                send ("Forced " ++ n ++ " to choose " ++ show c' ++ " because they didn't select chores in time!")
+                send ("Forced " ++ view name n ++ " to choose " ++ show c' ++ " because they didn't select chores in time!")
                 writeIORef c s'
             _ -> error "bad config"
         else pure ()
-    send (show (2 * (num - length (view choresLeft s))) ++ " hours left until the next chore needs to be chosen! At that time the person that needs to choose their chore next will have to have used `/chore-select` to choose their preferences for their chore.")
     s'' <- readIORef c
     sendStateUpdate s''
     ret m ()
