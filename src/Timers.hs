@@ -53,13 +53,13 @@ instance Show HourTime where
 startDate :: Day
 Just startDate = fromGregorianValid 2019 3 17
 
--- hours to seconds + 1 min grace period
+-- hours to seconds + 1 min grace period + account for UTC time
 hours :: Integer -> DiffTime
-hours x = secondsToDiffTime (60 * 60 * (x + 11) + 30 * 60 + 60)
+hours x = secondsToDiffTime (60 * 60 * (x + 4) + 60)
 
 toUTCTime :: HourTime -> UTCTime
-toUTCTime (Monday x) = UTCTime startDate (hours x)
-toUTCTime (Tuesday x) = nominalDay `addUTCTime` UTCTime startDate (hours x)
+toUTCTime (Monday x) = nominalDay `addUTCTime` UTCTime startDate (hours x)
+toUTCTime (Tuesday x) = (nominalDay + nominalDay) `addUTCTime` UTCTime startDate (hours x)
 
 delay timeAct time = fromInteger $ diffTimeToPicoseconds (realToFrac (timeAct `diffUTCTime` time)) `div` 1000000
 

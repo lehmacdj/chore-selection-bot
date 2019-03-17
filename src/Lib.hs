@@ -138,8 +138,12 @@ data Person a = Person
     }
 makeLenses ''Person
 
+-- take an id and convert it to a name
+convertIdToName :: String -> String
+convertIdToName x = fromMaybe "unknown-person" (lookup x ids)
+
 instance Show a => Show (Person a) where
-    show p = fromJust (lookup (view (personName.name) p) ids) ++ ": " ++ show (_personInfo p)
+    show p = convertIdToName (view (personName.name) p) ++ ": " ++ show (_personInfo p)
 
 data CSConfig = CSConfig
     { pickInterval :: NominalDiffTime
@@ -161,7 +165,7 @@ instance Show CSState where
         ++ "See here for full descriptions of all of the chores: " ++ descriptions
             where
                 showChosen ps = numberShow $ (++"\n") . show <$> ps
-                toUnchosenEntry (NameTime n t) = fromJust (lookup n ids) ++ " on " ++ show t ++ "\n"
+                toUnchosenEntry (NameTime n t) = convertIdToName n ++ " on " ++ show t ++ "\n"
                 showUnchosen ps = numberShow $ toUnchosenEntry <$> ps
 
 updateRankInfo :: [Chore] -> RankInfo -> RankInfo
@@ -250,11 +254,11 @@ forceChoose m c num = do
             CSState [] ys [] -> pure ()
             CSState (Person n (RankInfo []):xs) ys (c':cs) -> do
                 let s' = CSState xs (Person n c':ys) cs
-                send ("Forced " ++ view name n ++ " to choose " ++ show c' ++ " because they didn't select chores in time!")
+                send ("Forced " ++ convertIdToName (view name n) ++ " to choose " ++ show c' ++ " because they didn't select chores in time!")
                 writeIORef c s'
             CSState (Person n (RankInfo (c':_)):xs) ys cs -> do
                 let s' = CSState xs (Person n c':ys) cs
-                send ("Forced " ++ view name n ++ " to choose " ++ show c' ++ " because they didn't select chores in time!")
+                send ("Forced " ++ convertIdToName (view name n) ++ " to choose " ++ show c' ++ " because they didn't select chores in time!")
                 writeIORef c s'
             _ -> error "bad config"
         else pure ()
