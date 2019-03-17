@@ -49,7 +49,7 @@ main = do
     state <- liftIO . newIORef $ startingState
     updates lock state
     forkIO (timerLoop lock state)
-    sendStatusUpdate startingState
+    sendStateUpdate startingState
     scotty 80 $ do
         post "/echo" $ do
             b <- body
