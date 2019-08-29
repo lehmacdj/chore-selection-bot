@@ -53,9 +53,15 @@ instance Show HourTime where
 startDate :: Day
 Just startDate = fromGregorianValid 2019 3 17
 
+-- the timezone to use
+-- EDT is UTC-4 so -4 is used
+-- EST is UTC-5 so -5 is used when not in daylight savings time
+utcTimeZone :: Integer
+utcTimeZone = -4
+
 -- hours to seconds + 1 min grace period + account for UTC time
 hours :: Integer -> DiffTime
-hours x = secondsToDiffTime (60 * 60 * (x + 4) + 60)
+hours x = secondsToDiffTime (60 * 60 * (x - utcTimeZone) + 60)
 
 toUTCTime :: HourTime -> UTCTime
 toUTCTime (Monday x) = nominalDay `addUTCTime` UTCTime startDate (hours x)
