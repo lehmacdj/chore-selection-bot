@@ -119,7 +119,7 @@ on the [voncramm slack](voncramm.slack.com).
    stack build
    ```
 
-12. Run the Haskell service.
+10. Run the Haskell service.
 
    ```
    stack exec chore-select-slack-bot-exe
@@ -179,5 +179,12 @@ instance Show Chore where
 This determines what chores are displayed. You can change the text to anything
 to make it show whatever you want in the bot. Make sure you do this and make
 sure the changes are available on the server before you start the service.
+
+You also will probably want to edit
+```
+descriptions :: String
+descriptions = "https://docs.google.com/document/d/1VZlbIs-vUvTR3_N2ycZgGb1I4hMCqsqOWiVbI6xc5SY/edit?usp=sharing"
+```
+to have a more recent url to a chores document.
 
 [stack]: https://docs.haskellstack.org/en/stable/README/

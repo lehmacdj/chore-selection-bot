@@ -28,6 +28,8 @@ import Control.Concurrent
 
 import Timers
 
+import System.IO.Unsafe
+
 ids =
     [ ("UCJUZ2REY", "Katie")
     , ("UCKSX0170", "Carmen")
@@ -60,7 +62,7 @@ descriptions :: String
 descriptions = "https://docs.google.com/document/d/1VZlbIs-vUvTR3_N2ycZgGb1I4hMCqsqOWiVbI6xc5SY/edit?usp=sharing"
 
 postMessageURL :: String
-postMessageURL = "https://hooks.slack.com/services/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"
+postMessageURL = "https://hooks.slack.com/services/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"
 
 numberShow :: [String] -> String
 numberShow = concat . zipWith (++) ((++". ") . show <$> [1..])
