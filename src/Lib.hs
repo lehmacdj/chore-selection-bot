@@ -59,7 +59,7 @@ ids =
     ]
 
 descriptions :: String
-descriptions = "https://docs.google.com/document/d/1VZlbIs-vUvTR3_N2ycZgGb1I4hMCqsqOWiVbI6xc5SY/edit?usp=sharing"
+descriptions = "https://docs.google.com/document/d/1LRY8hMwItQHoUEmmRhGTrVV0XRTPAuH7V3sngvIIh_4/edit?usp=sharing"
 
 postMessageURL :: String
 postMessageURL = "https://hooks.slack.com/services/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"
