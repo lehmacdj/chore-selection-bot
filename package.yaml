@@ -31,6 +31,8 @@ dependencies:
 - wreq
 - text
 - async-timer
+- classy-prelude
+- unliftio
 
 library:
   source-dirs: src
