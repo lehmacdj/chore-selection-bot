@@ -43,7 +43,7 @@ people :: [String]
 people = toListOf (traverse._1) ids
 
 peopleTimes :: [NameTime]
-peopleTimes = zipWith NameTime people schedule
+peopleTimes = zipWith NameTime people compressedSchedule
 
 startingState :: CSState
 startingState = CSState ((\x -> Person x (RankInfo [])) <$> peopleTimes) [] (Chore <$> [1..25])
